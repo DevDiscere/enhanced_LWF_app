@@ -4,11 +4,30 @@
         <meta charset="UTF-8">
         <title>Enhanced LWF Web App</title>
         <link rel="stylesheet" href="./styles.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@100..900&display=swap" rel="stylesheet">
         <script src="./script.js" defer></script>
     </head>
     <body>
-        <label for="file-uploader">Upload a document image:</label>
-        <input type="file" id="file-uploader" name="file-uploader" accept=".jpg, .jpeg, .png" multiple>
-        <div class="image-preview"></div>
+        <aside class="sidebar">
+            <section>
+                <h1>Enhanced LWF Web App</h1>
+                <div class="uploader-container">
+                    <p>Upload document image/s:</p>
+                    <label class="uploader-button">
+                        <input type="file" id="file-uploader" name="file-uploader" accept=".jpg, .jpeg, .png" multiple>
+                        <span>Browse files</span>
+                    </label>
+                </div>
+                <ul class="file-container"></ul>
+            </section>
+            <footer>
+                <p>Created by DevDiscere 2025</p>
+            </footer>
+        </aside>
+        <main>
+            <div class="image-container"></div>
+        </main>
     </body>
 </html>

@@ -47,6 +47,123 @@ h1, h2, h3, h4, h5, h6 {
     isolation: isolate;
 }
 
-.image-preview {
+/*
+--rich-black: #0d1b2aff;
+--oxford-blue: #1b263bff;
+--yinmn-blue: #415a77ff;
+--silver-lake-blue: #778da9ff;
+--platinum: #e0e1ddff;
+*/
+
+body {
+    font-family: "Noto Sans Mono", sans-serif;
+    display: flex;
+    color: aliceblue;
+    height: 100vh;
+}
+
+/* Start of Sidebar styles */
+.sidebar {
+    width: 350px;
+    background-color: #283857;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+h1 {
+    margin-bottom: 1rem;
+}
+
+.uploader-container {
+    background-color: #415a77;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.uploader-container p {
+    margin-bottom: 0.5rem;
+}
+
+.uploader-button input[type="file"] {
+    position:absolute;
+    top: -1000px;
+}
+
+.uploader-button {
+    display: block;
+    max-width: max-content;
+    background-color: #778da9ff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+}
+
+.uploader-button:hover {
+    cursor: pointer;
+    background-color: #283857;
+}
+
+.file-container {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.file-preview {
+    display: flex;
+    padding: 1rem;
+    align-items: center;
+}
+
+.file-logo {
+    width: 30px;
+    height: 30px;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.file-preview p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.delete-button {
+    border: none;
+    margin-left: auto;
+    background-color: rgba(0, 0, 0, 0);
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.delete-button:hover {
+    cursor: pointer;
+}
+
+.delete-button svg {
+    height: 30px;
+    width: 30px;
+    fill: aliceblue;
+}
+
+.delete-button:hover svg {
+    fill: #415a77;
+}
+
+footer {
+    text-align: center;
+}
+/* End of sidebar styles */
+
+/* Start of main container styles */
+main {
+    flex: 1;
+    background-color: #0d1b2a;
+}
+    
+.image-container {
     opacity: 0;
 }
+/* End of main container styles */
