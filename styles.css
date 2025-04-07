@@ -54,12 +54,16 @@ h1, h2, h3, h4, h5, h6 {
 --silver-lake-blue: #778da9ff;
 --platinum: #e0e1ddff;
 */
+html,
+body {
+    height: auto;
+    min-height: 100vh;
+}
 
 body {
     font-family: "Noto Sans Mono", sans-serif;
     display: flex;
     color: aliceblue;
-    height: 100vh;
 }
 
 /* Start of Sidebar styles */
@@ -159,25 +163,173 @@ footer {
 
 /* Start of main container styles */
 .main-container {
+    display: flex;
+    flex-direction: column;
     flex: 1;
     background-color: #0d1b2a;
-    height: 100%;
+    padding: 1rem;
 }
 
 .tab-link {
-    padding: 1rem;
+    border-radius: 0.5rem 0.5rem 0px 0px;
+    padding: 0.5rem 1rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 200px;
     cursor: pointer;
+    background-color: inherit;
+    border: none;
+    color: aliceblue;
+}
+
+.tab-link:hover {
+    background-color: #1b263bff;
+}
+
+.active, 
+.active:hover {
+    background-color: #415a77ff;
+}
+
+.tab-section-container {
+    display: flex
 }
 
 .tab-content {
     display: none;
+    width: 100%;
+    padding: 1rem;
 }
 
 .open {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: #415a77ff;
+    border-radius: 0px 0.5rem 0.5rem 0.5rem;
+}
+
+.image-container {
+    display: flex;
+    gap: 1rem;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.image-holder {
+    flex: 1;
+    max-width: 100%;
+    overflow: hidden;
+    background-color: black;
+}
+
+.input-image {
+    width: 100%;
+    height: auto;
     display: block;
 }
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    background-color: #778da9ff;
+    border-radius: 1rem;
+    padding: 1rem;
+    gap: 1rem;
+}
+
+.form-component {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.form-component input[type="range"] {
+    width: 300px;
+    accent-color: #4169e1;
+    cursor: grab;
+}
+
+.form-submit {
+    max-width: max-content;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 2px solid #283857;
+    background-color: rgba(0, 0, 0, 0);
+    color: aliceblue;
+}
+
+.form-submit:hover {
+    background-color: #283857;
+    cursor: pointer;
+}
+
+.range-value {
+    font-size: 0.9rem;
+}
+
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toggle-switch input {
+    display: none;
+}
+
+.toggle-switch .switch-label {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.toggle-switch .switch-label .slider {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgb(168, 168, 168);
+    border-radius: 24px;
+    transition: 0.4s;
+}
+
+.toggle-switch .switch-label .slider::before {
+    content: "";
+    position: absolute;
+    width: 20px; height: 20px;
+    left: 2px; bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.4s;
+}
+
+.toggle-switch input:checked + .switch-label .slider {
+    background-color: #4169e1;
+}
+
+.toggle-switch input:checked + .switch-label .slider::before {
+    transform: translateX(26px);
+}
+
+.toggle-text {
+    color: aliceblue;
+}
+
+.div-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.number-input {
+    padding: 5px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: none;
+    background-color: #fff;
+}
+
 /* End of main container styles */

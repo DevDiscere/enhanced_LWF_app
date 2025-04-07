@@ -55,8 +55,129 @@ const createSVG = function createSVG (icon) {
     }
 }
 
+const createForm = function createForm(imageURL) {
+    const uniqueId = imageURL.replace(/\W/g, ""); // Consistent ID
+
+    const createToggleSwitch = function createToggleSwitch(formLabel, uniqueId) {
+        const formattedFormLabel = `${formLabel.toLowerCase().replace(/\s+/g, "-")}-${uniqueId}`;
+        const divContainer = document.createElement("div");
+        const input = document.createElement("input");
+        const label = document.createElement("label");
+        const sliderSpan = document.createElement("span");
+        const textLabel = document.createElement("span");
+    
+        divContainer.classList.add("form-component", "toggle-switch");
+    
+        input.setAttribute("type", "checkbox");
+        input.id = formattedFormLabel;
+        input.name = `show-visualizations-${uniqueId}`;
+        input.value = "true";
+        input.classList.add("toggle-input");
+    
+        label.classList.add("switch-label");
+        label.setAttribute("for", formattedFormLabel);
+    
+        sliderSpan.classList.add("slider");
+        textLabel.classList.add("toggle-text");
+        textLabel.textContent = formLabel;
+    
+        label.appendChild(sliderSpan);
+    
+        // Order is important: input -> label (so the CSS selector works)
+        divContainer.appendChild(input);
+        divContainer.appendChild(label);
+        divContainer.appendChild(textLabel);
+    
+        return divContainer;
+    };
+
+    const createFormComponent = function createFormComponent(formType, formLabel, initialValue = 0, minValue = 0, maxValue = 0) {
+        const formattedFormLabel = `${formLabel.toLowerCase().replace(" ", "-").replace(":", "")}-${uniqueId}`;
+        const name = formattedFormLabel;
+    
+        const divContainer = document.createElement("div");
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+    
+        label.htmlFor = formattedFormLabel;
+        label.textContent = formLabel;
+    
+        input.setAttribute("type", formType);
+        input.id = formattedFormLabel;
+        input.name = name;
+        input.defaultValue = initialValue;
+        input.min = minValue;
+        input.max = maxValue;
+        input.classList.add("number-input");  // Add a class for styling
+    
+        divContainer.classList.add("form-component");
+        divContainer.append(label);
+        divContainer.append(input);
+    
+        // If it's a range, show the value beside it
+        if (formType === "range") {
+            input.classList.add("range-input");
+    
+            const valueDisplay = document.createElement("span");
+            valueDisplay.classList.add("range-value");
+            valueDisplay.textContent = initialValue;
+    
+            input.addEventListener("input", () => {
+                valueDisplay.textContent = input.value;
+            });
+    
+            divContainer.appendChild(valueDisplay);
+        }
+    
+        return divContainer;
+    };
+
+    const formContainer = document.createElement("form");
+    formContainer.classList.add("form-container");
+
+    const toggleComponent = createToggleSwitch("Show Visualizations", uniqueId);
+    const maxIterationsComponent = createFormComponent("number", "Max Iterations:", 3, 3, Infinity);
+    const penumbraSizeComponent = createFormComponent("number", "Penumbra Size:", 2, 2, Infinity);
+    const upperBoundsComponent = createFormComponent("range", "Upper Bounds:", 16, 1, 256);
+    const formSubmit = document.createElement("input");
+
+    formSubmit.setAttribute("type", "submit");
+    formSubmit.value = "Submit";
+    formSubmit.classList.add("form-submit");
+
+    const divContainer = document.createElement("div");
+    divContainer.classList.add("div-container");
+    divContainer.appendChild(maxIterationsComponent);
+    divContainer.appendChild(penumbraSizeComponent);
+
+    formContainer.appendChild(toggleComponent);
+    formContainer.appendChild(divContainer);
+    formContainer.appendChild(upperBoundsComponent);
+    formContainer.appendChild(formSubmit);
+
+    formContainer.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const form = e.target;
+
+        const toggleChecked = form.elements[`show-visualizations-${uniqueId}`]?.checked;
+        const maxIterations = form.elements[`max-iterations-${uniqueId}`]?.value;
+        const penumbraSize = form.elements[`penumbra-size-${uniqueId}`]?.value;
+        const upperBounds = form.elements[`upper-bounds-${uniqueId}`]?.value;
+
+        console.log("✅ Form Submitted with:");
+        console.log("🖼️ Image URL:", imageURL);
+        console.log("📌 Show Visualizations:", toggleChecked);
+        console.log("📌 Max Iterations:", maxIterations);
+        console.log("📌 Penumbra Size:", penumbraSize);
+        console.log("📌 Upper Bounds:", upperBounds);
+    });
+
+    return formContainer;
+};
+
 const showUploadedFiles = function showUploadedFiles (uploadedFiles) {
-    const createComponent = function createComponent (imageURL, imageFileName, container, type) {
+    const createHTMLComponent = function createHTMLComponent (imageURL, imageFileName, container, type) {
         if (type == "file") {
             const filePreview = document.createElement("li");
             const fileLogo = createSVG("photo");
@@ -92,16 +213,30 @@ const showUploadedFiles = function showUploadedFiles (uploadedFiles) {
 
         if (type == "tab-section") {
             const tabSection = document.createElement("section");
-            const image = document.createElement("img");
+            const inputImage = document.createElement("img");
+            const inputDiv = document.createElement("div");
+            const outputDiv = document.createElement("div");
+            const imageContainer = document.createElement("div");
+            const formComponent = createForm(imageURL);
 
-            tabSection.classList.add("tab-content");
             tabSection.dataset.url = imageURL;
+            tabSection.classList.add("tab-content");
 
-            image.src = imageURL;
-            image.alt = imageFileName;
-            image.dataset.url = imageURL;
+            inputImage.src = imageURL;
+            inputImage.alt = imageFileName;
+            inputImage.dataset.url = imageURL;
+            inputImage.classList.add("input-image");
 
-            tabSection.appendChild(image);
+            inputDiv.classList.add("image-holder");
+            outputDiv.classList.add("image-holder");
+
+            imageContainer.classList.add("image-container");
+
+            inputDiv.appendChild(inputImage);
+            imageContainer.appendChild(inputDiv);
+            imageContainer.appendChild(outputDiv);
+            tabSection.appendChild(imageContainer);
+            tabSection.appendChild(formComponent);
             container.appendChild(tabSection);
         }
     }
@@ -114,16 +249,13 @@ const showUploadedFiles = function showUploadedFiles (uploadedFiles) {
         const imageFileName = file.imageFile.name;
         const imageURL = file.imageURL;
 
-        createComponent(imageURL, imageFileName, fileContainer, "file");
-        createComponent(imageURL, imageFileName, tabButtonContainer, "tab-button");
-        createComponent(imageURL, imageFileName, tabSectionContainer, "tab-section");
+        createHTMLComponent(imageURL, imageFileName, fileContainer, "file");
+        createHTMLComponent(imageURL, imageFileName, tabButtonContainer, "tab-button");
+        createHTMLComponent(imageURL, imageFileName, tabSectionContainer, "tab-section");
     });
 
-    const firstTabSection = tabSectionContainer.querySelector(".tab-content");
-
-    if (firstTabSection){
-        firstTabSection.classList.add("open");
-    }
+    tabSectionContainer.firstElementChild?.classList.add("open");
+    tabButtonContainer.firstElementChild?.classList.add("active");
 
     const deleteButtons = document.querySelectorAll(".delete-button");
     deleteButtons.forEach((button) => {
@@ -133,9 +265,9 @@ const showUploadedFiles = function showUploadedFiles (uploadedFiles) {
 
             const tabButton = tabButtonContainer.querySelector(`button[data-url="${imageURL}"]`);
             const tabSection = tabSectionContainer.querySelector(`section[data-url="${imageURL}"]`);
-            const image = tabSection?.querySelector(`img[data-url="${imageURL}"]`);
+            const image = tabSectionContainer.querySelector(`img[data-url="${imageURL}"]`);
 
-            const isTabOpen = tabSection?.classList.contains("open");
+            const isActive = tabButton.classList.contains("active");
 
             if (image) {
                 // Release memory reference to the image
@@ -143,26 +275,24 @@ const showUploadedFiles = function showUploadedFiles (uploadedFiles) {
                 image.remove();
             }
 
-            tabButton?.remove();
-            tabSection?.remove();
-            filePreview?.remove();
+            tabButton.remove();
+            tabSection.remove();
+            filePreview.remove();
 
-            // Remove the image from global image storage
+            // Remove from global storage
             const imageIndex = imagesInStorage.findIndex(image => image.imageURL === imageURL);
             if (imageIndex !== -1) {
                 imagesInStorage.splice(imageIndex, 1);
             }
 
-            if (isTabOpen) {
-                const remainingTabs = tabButtonContainer.querySelectorAll(".tab-link");
-                const remainingSections = tabSectionContainer.querySelectorAll(".tab-content");
+            // ✅ If deleted tab was active, activate the next one
+            if (isActive) {
+                const remainingTabButtons = tabButtonContainer.querySelectorAll(".tab-link");
+                const remainingTabSections = tabSectionContainer.querySelectorAll(".tab-content");
 
-                if (remainingTabs.length > 0 && remainingSections.length > 0) {
-                    const nextTabButton = remainingTabs[0];
-                    const nextImageURL = nextTabButton.dataset.url;
-                    const nextTabSection = tabSectionContainer.querySelector(`section[data-url="${nextImageURL}"]`);
-
-                    nextTabSection?.classList.add("open");
+                if (remainingTabButtons.length > 0) {
+                    remainingTabButtons[0].classList.add("active");
+                    remainingTabSections[0].classList.add("open");
                 }
             }
         });
@@ -171,17 +301,22 @@ const showUploadedFiles = function showUploadedFiles (uploadedFiles) {
     const tabButtons = document.querySelectorAll(".tab-link");
     tabButtons.forEach((button) => {
         button.addEventListener("click", () => {
-            // Remove the "open" class from the currently active tab section (if any)
-            const activeTabSection = document.querySelector(".open");
+            // Remove "open" from the currently active tab section
+            const activeTabSection = document.querySelector(".tab-content.open");
             activeTabSection?.classList.remove("open");
 
-            // Identify the clicked tab button and get its associated URL
+            // Remove "active" from the currently active tab button
+            const activeTabButton = document.querySelector(".tab-link.active");
+            activeTabButton?.classList.remove("active");
+
+            // Get URL from clicked button and update tab content
             const clickedTabButton = button.closest(".tab-link");
             const imageURL = clickedTabButton.dataset.url;
 
-            // Find the corresponding tab section and mark it as active
-            const targetTabSection = tabSectionContainer.querySelector(`section[data-url="${imageURL}"]`);
-            targetTabSection?.classList.add("open");
+            // Activate the clicked button and corresponding tab section
+            clickedTabButton.classList.add("active");
+            const correspondingTabSection = tabSectionContainer.querySelector(`section[data-url="${imageURL}"]`);
+            correspondingTabSection?.classList.add("open");
         });
     });
 }
