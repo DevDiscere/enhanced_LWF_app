@@ -133,6 +133,11 @@ const createForm = function createForm(imageURL) {
     };
 
     const formContainer = document.createElement("form");
+
+    formContainer.method = "POST";
+    formContainer.action = "/process-image";
+    formContainer.encType = "multipart/form-data";
+    formContainer.imageFile = imagesInStorage.find(img => img.imageURL === imageURL)?.imageFile;
     formContainer.classList.add("form-container");
 
     const toggleComponent = createToggleSwitch("Show Visualizations", uniqueId);
@@ -157,21 +162,48 @@ const createForm = function createForm(imageURL) {
 
     formContainer.addEventListener("submit", (e) => {
         e.preventDefault();
-
+    
         const form = e.target;
-
-        const toggleChecked = form.elements[`show-visualizations-${uniqueId}`]?.checked;
-        const maxIterations = form.elements[`max-iterations-${uniqueId}`]?.value;
-        const penumbraSize = form.elements[`penumbra-size-${uniqueId}`]?.value;
-        const upperBounds = form.elements[`upper-bounds-${uniqueId}`]?.value;
-
-        console.log("✅ Form Submitted with:");
-        console.log("🖼️ Image URL:", imageURL);
-        console.log("📌 Show Visualizations:", toggleChecked);
-        console.log("📌 Max Iterations:", maxIterations);
-        console.log("📌 Penumbra Size:", penumbraSize);
-        console.log("📌 Upper Bounds:", upperBounds);
-    });
+        const formData = new FormData();
+    
+        const fileObj = form.imageFile;
+    
+        if (!fileObj) {
+            console.error("No image file found for form submission");
+            return;
+        }
+    
+        formData.append("image", fileObj);
+        formData.append("show_visualizations", form.elements[`show-visualizations-${uniqueId}`]?.checked ? "true" : "false");
+        formData.append("max_iterations", form.elements[`max-iterations-${uniqueId}`]?.value);
+        formData.append("penumbra_size", form.elements[`penumbra-size-${uniqueId}`]?.value);
+        formData.append("upper_bounds", form.elements[`upper-bounds-${uniqueId}`]?.value);
+    
+        console.log("🧪 Submitting Form Data:");
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}:`, value);
+        }
+    
+        fetch("/process", {
+            method: "POST",
+            body: formData,
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Server returned an error");
+            return res.blob();
+        })
+        .then(blob => {
+            const outputImg = form.closest(".tab-content").querySelector(".image-holder:nth-child(2)");
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(blob);
+            img.alt = "Processed Image";
+            img.classList.add("output-image");
+    
+            outputImg.replaceChildren();
+            outputImg.appendChild(img);
+        })
+        .catch(err => console.error("Processing failed", err));
+    });    
 
     return formContainer;
 };
