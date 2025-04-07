@@ -158,12 +158,26 @@ footer {
 /* End of sidebar styles */
 
 /* Start of main container styles */
-main {
+.main-container {
     flex: 1;
     background-color: #0d1b2a;
+    height: 100%;
 }
-    
-.image-container {
-    opacity: 0;
+
+.tab-link {
+    padding: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    cursor: pointer;
+}
+
+.tab-content {
+    display: none;
+}
+
+.open {
+    display: block;
 }
 /* End of main container styles */

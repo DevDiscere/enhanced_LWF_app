@@ -56,75 +56,132 @@ const createSVG = function createSVG (icon) {
 }
 
 const showUploadedFiles = function showUploadedFiles (uploadedFiles) {
-    const createFilePreview = function createFilePreview (imageURL, imageFileName, container) {
-        const filePreview = document.createElement("li");
-        const fileLogo = createSVG("photo");
-        const fileName = document.createElement("p");
-        const deleteButton = document.createElement("button");
-        const deleteLogo = createSVG("x-mark");
+    const createComponent = function createComponent (imageURL, imageFileName, container, type) {
+        if (type == "file") {
+            const filePreview = document.createElement("li");
+            const fileLogo = createSVG("photo");
+            const fileName = document.createElement("p");
+            const deleteButton = document.createElement("button");
+            const deleteLogo = createSVG("x-mark");
 
-        filePreview.classList.add("file-preview");
-        filePreview.dataset.url = imageURL;
+            filePreview.classList.add("file-preview");
+            filePreview.dataset.url = imageURL;
 
-        fileLogo.classList.add("file-logo");
-        filePreview.appendChild(fileLogo)
+            fileLogo.classList.add("file-logo");
+            filePreview.appendChild(fileLogo)
 
-        fileName.textContent = imageFileName;
-        filePreview.appendChild(fileName);
-        
-        deleteButton.classList.add("delete-button");
-        deleteButton.appendChild(deleteLogo);
-        filePreview.appendChild(deleteButton);
+            fileName.textContent = imageFileName;
+            filePreview.appendChild(fileName);
+            
+            deleteButton.classList.add("delete-button");
+            deleteButton.appendChild(deleteLogo);
+            filePreview.appendChild(deleteButton);
 
-        container.appendChild(filePreview);
-    }
+            container.appendChild(filePreview);
+        }
 
-    const createImagePreview = function createImagePreview (imageURL, imageFileName, container) {
-        const image = document.createElement("img");
+        if (type == "tab-button") {
+            const tabButton = document.createElement("button");
 
-        image.src = imageURL;
-        image.alt = imageFileName;
-        image.dataset.url = imageURL;
+            tabButton.classList.add("tab-link");
+            tabButton.textContent = imageFileName;
+            tabButton.dataset.url = imageURL;
 
-        container.appendChild(image);
+            container.appendChild(tabButton);
+        }
+
+        if (type == "tab-section") {
+            const tabSection = document.createElement("section");
+            const image = document.createElement("img");
+
+            tabSection.classList.add("tab-content");
+            tabSection.dataset.url = imageURL;
+
+            image.src = imageURL;
+            image.alt = imageFileName;
+            image.dataset.url = imageURL;
+
+            tabSection.appendChild(image);
+            container.appendChild(tabSection);
+        }
     }
 
     const fileContainer = document.querySelector(".file-container");
-    const imageContainer = document.querySelector(".image-container");
-
-    // Show the image preview
-    imageContainer.style.opacity = 1;
+    const tabButtonContainer = document.querySelector(".tab-button-container");
+    const tabSectionContainer = document.querySelector(".tab-section-container");
 
     uploadedFiles.forEach( (file) => {
         const imageFileName = file.imageFile.name;
         const imageURL = file.imageURL;
 
-        createFilePreview(imageURL, imageFileName, fileContainer);
-        createImagePreview(imageURL, imageFileName, imageContainer);
+        createComponent(imageURL, imageFileName, fileContainer, "file");
+        createComponent(imageURL, imageFileName, tabButtonContainer, "tab-button");
+        createComponent(imageURL, imageFileName, tabSectionContainer, "tab-section");
     });
 
+    const firstTabSection = tabSectionContainer.querySelector(".tab-content");
+
+    if (firstTabSection){
+        firstTabSection.classList.add("open");
+    }
+
     const deleteButtons = document.querySelectorAll(".delete-button");
-    deleteButtons.forEach( (button) => {
+    deleteButtons.forEach((button) => {
         button.addEventListener("click", () => {
             const filePreview = button.closest(".file-preview");
             const imageURL = filePreview.dataset.url;
 
-            // Find the matching img element using data-url
-            const image = imageContainer.querySelector(`img[data-url="${imageURL}"]`);
+            const tabButton = tabButtonContainer.querySelector(`button[data-url="${imageURL}"]`);
+            const tabSection = tabSectionContainer.querySelector(`section[data-url="${imageURL}"]`);
+            const image = tabSection?.querySelector(`img[data-url="${imageURL}"]`);
+
+            const isTabOpen = tabSection?.classList.contains("open");
 
             if (image) {
-                // Revoke the object URL to release memory
+                // Release memory reference to the image
                 URL.revokeObjectURL(image.src);
                 image.remove();
             }
 
-            filePreview.remove();
+            tabButton?.remove();
+            tabSection?.remove();
+            filePreview?.remove();
 
             // Remove the image from global image storage
             const imageIndex = imagesInStorage.findIndex(image => image.imageURL === imageURL);
             if (imageIndex !== -1) {
                 imagesInStorage.splice(imageIndex, 1);
             }
+
+            if (isTabOpen) {
+                const remainingTabs = tabButtonContainer.querySelectorAll(".tab-link");
+                const remainingSections = tabSectionContainer.querySelectorAll(".tab-content");
+
+                if (remainingTabs.length > 0 && remainingSections.length > 0) {
+                    const nextTabButton = remainingTabs[0];
+                    const nextImageURL = nextTabButton.dataset.url;
+                    const nextTabSection = tabSectionContainer.querySelector(`section[data-url="${nextImageURL}"]`);
+
+                    nextTabSection?.classList.add("open");
+                }
+            }
+        });
+    });
+
+    const tabButtons = document.querySelectorAll(".tab-link");
+    tabButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            // Remove the "open" class from the currently active tab section (if any)
+            const activeTabSection = document.querySelector(".open");
+            activeTabSection?.classList.remove("open");
+
+            // Identify the clicked tab button and get its associated URL
+            const clickedTabButton = button.closest(".tab-link");
+            const imageURL = clickedTabButton.dataset.url;
+
+            // Find the corresponding tab section and mark it as active
+            const targetTabSection = tabSectionContainer.querySelector(`section[data-url="${imageURL}"]`);
+            targetTabSection?.classList.add("open");
         });
     });
 }
