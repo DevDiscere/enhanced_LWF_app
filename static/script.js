@@ -147,7 +147,7 @@ const createForm = function createForm(imageURL) {
     const formSubmit = document.createElement("input");
 
     formSubmit.setAttribute("type", "submit");
-    formSubmit.value = "Submit";
+    formSubmit.value = "Enhance Image";
     formSubmit.classList.add("form-submit");
 
     const divContainer = document.createElement("div");
@@ -158,7 +158,19 @@ const createForm = function createForm(imageURL) {
     formContainer.appendChild(toggleComponent);
     formContainer.appendChild(divContainer);
     formContainer.appendChild(upperBoundsComponent);
-    formContainer.appendChild(formSubmit);
+
+    const formActions = document.createElement("div");
+    formActions.classList.add("form-actions");
+    formActions.appendChild(formSubmit);      // Submit button
+
+    const downloadBtn = document.createElement("a");
+    downloadBtn.textContent = "Download Result";
+    downloadBtn.classList.add("download-button");
+    downloadBtn.style.display = "none";  // Hidden initially
+    downloadBtn.setAttribute("download", "output.png");  // Default filename
+
+    formActions.appendChild(downloadBtn);
+    formContainer.appendChild(formActions);
 
     formContainer.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -190,17 +202,49 @@ const createForm = function createForm(imageURL) {
         })
         .then(res => {
             if (!res.ok) throw new Error("Server returned an error");
-            return res.blob();
+            return res.json();
         })
-        .then(blob => {
-            const outputImg = form.closest(".tab-content").querySelector(".image-holder:nth-child(2)");
-            const img = document.createElement("img");
-            img.src = URL.createObjectURL(blob);
-            img.alt = "Processed Image";
-            img.classList.add("output-image");
-    
-            outputImg.replaceChildren();
-            outputImg.appendChild(img);
+        .then(data => {
+            const tabSection = form.closest(".tab-content");
+        
+            const base64 = data.visualizations?.enhanced_penumbra || data.enhanced_penumbra;
+            const outputContainer = tabSection.querySelector('[data-label="output"]');
+            const downloadBtn = form.querySelector(".download-button");
+        
+            if (!base64) {
+                throw new Error("No image found in response");
+            }
+        
+            const renderImage = (container, base64Img, label) => {
+                let img = container.querySelector("img");
+        
+                if (!img) {
+                    img = document.createElement("img");
+                    container.appendChild(img);
+                }
+        
+                img.src = `data:image/png;base64,${base64Img}`;
+                img.alt = label;
+                img.classList.add("output-image");
+            };
+        
+            renderImage(outputContainer, base64, "Enhanced Penumbra");
+
+            // Show and update download button
+            if (downloadBtn) {
+                downloadBtn.href = `data:image/png;base64,${base64}`;
+                downloadBtn.style.display = "inline-block"; // Show button
+            }
+
+            if (data.visualizations) {
+                renderImage(tabSection.querySelector('[data-label="shading_map"]'), data.visualizations.shading_map, "Shading Map");
+                renderImage(tabSection.querySelector('[data-label="colored_mask"]'), data.visualizations.colored_mask, "Colored Mask");
+                renderImage(tabSection.querySelector('[data-label="enhanced_umbra"]'), data.visualizations.enhanced_umbra, "Enhanced Umbra");
+                renderImage(tabSection.querySelector('[data-label="histograms"]'), data.visualizations.histograms, "Histograms");
+                renderImage(tabSection.querySelector('[data-label="mask_blue"]'), data.visualizations.mask_blue, "Blue Mask");
+                renderImage(tabSection.querySelector('[data-label="mask_green"]'), data.visualizations.mask_green, "Green Mask");
+                renderImage(tabSection.querySelector('[data-label="mask_red"]'), data.visualizations.mask_red, "Red Mask");
+            }
         })
         .catch(err => console.error("Processing failed", err));
     });    
@@ -244,31 +288,78 @@ const showUploadedFiles = function showUploadedFiles (uploadedFiles) {
         }
 
         if (type == "tab-section") {
+            const createLabeledImageHolder = (labelText, dataLabel) => {
+                const div = document.createElement("div");
+                div.classList.add("image-holder");
+                div.dataset.label = dataLabel;
+        
+                const para = document.createElement("p");
+                para.textContent = labelText;
+                div.appendChild(para);
+        
+                return div;
+            };
+        
             const tabSection = document.createElement("section");
-            const inputImage = document.createElement("img");
-            const inputDiv = document.createElement("div");
-            const outputDiv = document.createElement("div");
-            const imageContainer = document.createElement("div");
-            const formComponent = createForm(imageURL);
-
             tabSection.dataset.url = imageURL;
             tabSection.classList.add("tab-content");
-
+        
+            const inputImage = document.createElement("img");
             inputImage.src = imageURL;
             inputImage.alt = imageFileName;
             inputImage.dataset.url = imageURL;
             inputImage.classList.add("input-image");
-
-            inputDiv.classList.add("image-holder");
-            outputDiv.classList.add("image-holder");
-
+        
+            // Image containers
+            const imageContainer = document.createElement("div");
+            const processContainer = document.createElement("div");
+            const histogramContainer = document.createElement("div");
+            const maskContainer = document.createElement("div");
+        
             imageContainer.classList.add("image-container");
-
+            processContainer.classList.add("image-container");
+            histogramContainer.classList.add("image-container");
+            maskContainer.classList.add("image-container");
+        
+            // Input and output
+            const inputDiv = createLabeledImageHolder("Input Image", "input");
+            const outputDiv = createLabeledImageHolder("Output Image", "output");
             inputDiv.appendChild(inputImage);
             imageContainer.appendChild(inputDiv);
             imageContainer.appendChild(outputDiv);
+        
+            // Processed visualizations
+            const shadingMapDiv = createLabeledImageHolder("Shading Map", "shading_map");
+            const coloredMaskDiv = createLabeledImageHolder("Colored Mask", "colored_mask");
+            const enhancedUmbraDiv = createLabeledImageHolder("Enhanced Umbra", "enhanced_umbra");
+        
+            processContainer.appendChild(shadingMapDiv);
+            processContainer.appendChild(coloredMaskDiv);
+            processContainer.appendChild(enhancedUmbraDiv);
+        
+            // Histogram
+            const histogramDiv = createLabeledImageHolder("Channel-wise Histogram Analysis", "histograms");
+            histogramContainer.appendChild(histogramDiv);
+        
+            // Masks
+            const mask1Div = createLabeledImageHolder("Blue Channel Mask", "mask_blue");
+            const mask2Div = createLabeledImageHolder("Green Channel Mask", "mask_green");
+            const mask3Div = createLabeledImageHolder("Red Channel Mask", "mask_red");
+        
+            maskContainer.appendChild(mask1Div);
+            maskContainer.appendChild(mask2Div);
+            maskContainer.appendChild(mask3Div);
+        
+            // Form
+            const formComponent = createForm(imageURL);
+        
+            // Final assembly
             tabSection.appendChild(imageContainer);
+            tabSection.appendChild(processContainer);
+            tabSection.appendChild(histogramContainer);
+            tabSection.appendChild(maskContainer);
             tabSection.appendChild(formComponent);
+        
             container.appendChild(tabSection);
         }
     }
@@ -297,19 +388,25 @@ const showUploadedFiles = function showUploadedFiles (uploadedFiles) {
 
             const tabButton = tabButtonContainer.querySelector(`button[data-url="${imageURL}"]`);
             const tabSection = tabSectionContainer.querySelector(`section[data-url="${imageURL}"]`);
-            const image = tabSectionContainer.querySelector(`img[data-url="${imageURL}"]`);
 
             const isActive = tabButton.classList.contains("active");
 
-            if (image) {
-                // Release memory reference to the image
-                URL.revokeObjectURL(image.src);
-                image.remove();
+            if (tabSection) {
+                const allImages = tabSection.querySelectorAll("img");
+                allImages.forEach((img) => {
+                    const src = img.src;
+
+                    if (src.startsWith("blob:")) {
+                        URL.revokeObjectURL(src);
+                    }
+
+                    img.remove();
+                });
             }
 
-            tabButton.remove();
-            tabSection.remove();
-            filePreview.remove();
+            tabButton?.remove();
+            tabSection?.remove();
+            filePreview?.remove();
 
             // Remove from global storage
             const imageIndex = imagesInStorage.findIndex(image => image.imageURL === imageURL);

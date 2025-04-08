@@ -101,6 +101,7 @@ h1 {
     background-color: #778da9ff;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
+    transition: background-color 0.2s ease-in-out;
 }
 
 .uploader-button:hover {
@@ -205,29 +206,54 @@ footer {
 .open {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
     background-color: #415a77ff;
     border-radius: 0px 0.5rem 0.5rem 0.5rem;
 }
 
+/* Hide image-holder if it has no image */
+.image-holder:not(:has(img)) {
+    display: none;
+}
+
+/* Hide image-container if all its image-holders are hidden */
+.image-container:not(:has(.image-holder img)) {
+    display: none;
+}
+
+/* Common layout for all image containers */
 .image-container {
     display: flex;
-    gap: 1rem;
-    max-width: 100%;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
+/* Individual image holders */
 .image-holder {
-    flex: 1;
-    max-width: 100%;
-    overflow: hidden;
-    background-color: black;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 8px;
+    flex: 1 1 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 
-.input-image {
-    width: 100%;
-    height: auto;
-    display: block;
+/* Caption/label style */
+.image-holder p {
+    font-family: monospace;
+    font-size: 14px;
+    color: aliceblue;
+    margin: 0 0 6px;
+    text-align: center;
+}
+
+/* Images */
+.image-holder img {
+    max-width: 100%;
+    border-radius: 4px;
+    object-fit: contain;
 }
 
 .form-container {
@@ -252,19 +278,42 @@ footer {
     cursor: grab;
 }
 
-.form-submit {
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}  
+
+.form-submit,
+.download-button {
     max-width: max-content;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
-    border: 2px solid #283857;
-    background-color: rgba(0, 0, 0, 0);
+    /* border: 2px solid #41e15c; */
     color: aliceblue;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.form-submit {
+    background-color: #4169e1;
+    border: none;
+}
+
+.download-button {
+    text-decoration: none;
+    background-color: #3ac46e;
 }
 
 .form-submit:hover {
-    background-color: #283857;
+    background-color: #3653c7;
     cursor: pointer;
 }
+
+.download-button:hover {
+    background-color: #2ea958;
+    cursor: pointer;
+}
+
 
 .range-value {
     font-size: 0.9rem;
@@ -331,5 +380,6 @@ footer {
     border: none;
     background-color: #fff;
 }
+
 
 /* End of main container styles */
