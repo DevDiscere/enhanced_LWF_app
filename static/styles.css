@@ -76,7 +76,7 @@ body {
     justify-content: space-between;
 }
 
-h1 {
+h1, h2 {
     margin-bottom: 1rem;
 }
 
@@ -312,7 +312,6 @@ footer {
     background-color: #2ea958;
     cursor: pointer;
 }
-
 
 .range-value {
     font-size: 0.9rem;
